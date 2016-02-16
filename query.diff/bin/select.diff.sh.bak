@@ -1,0 +1,36 @@
+#!/bin/bash
+
+if [ ! -f ../result/diff.txt ]
+then
+    num=`ls -1 ../result/NEW_HOST/ | sort -n -r | head -n 1 | sed 's/\.txt//g'`
+    
+    > ../result/diff.txt
+    
+    for ((i=0;i<=$num;i++)) 
+    do
+        sum1=`cat ../result/OLD_HOST/$i.txt | grep -v "ssrb:" | grep -v "ssrqb:" | ./remove.nonsense.pl | md5sum | awk '{print $1}'`
+        sum2=`cat ../result/NEW_HOST/$i.txt | grep -v "ssrb:" | grep -v "ssrqb:" | ./remove.nonsense.pl | md5sum | awk '{print $1}'`
+        if [ "$sum1" != "$sum2" ]
+        then
+            echo "$i" >> ../result/diff.txt
+        fi
+    done
+    
+    cat ../result/diff.txt
+else
+    nums=`cat ../result/diff.txt | awk '{print $1}'`
+    > ../result/diff.txt
+    for i in $nums
+    do
+        echo "processing $i"
+        sum1=`cat ../result/OLD_HOST/$i.txt | grep -v "ssrb:" | grep -v "ssrqb:" | ./remove.nonsense.pl | md5sum | awk '{print $1}'`
+        sum2=`cat ../result/NEW_HOST/$i.txt | grep -v "ssrb:" | grep -v "ssrqb:" | ./remove.nonsense.pl | md5sum | awk '{print $1}'`
+        if [ "$sum1" != "$sum2" ]
+        then
+            echo "$i" >> ../result/diff.txt
+        fi
+    done
+
+    cat ../result/diff.txt
+fi
+

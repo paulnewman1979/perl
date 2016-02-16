@@ -1,0 +1,32 @@
+#!/bin/bash
+
+num=$1;
+if [ "$num" == "" ]
+then
+  num=`cat ../result/diff.txt  | awk '{print $1}' | head -n 1`
+fi
+
+echo $num
+cp ../result/OLD_HOST/$num.txt ../bak/OLD_HOST/$num.txt
+cp ../result/NEW_HOST/$num.txt ../bak/NEW_HOST/$num.txt
+
+grep "/$num.txt" view.txt > del.sh
+chmod +x del.sh
+./del.sh
+
+req2=`cat del.sh | grep "\-2"`
+if [ "$req2" != "" ]
+then
+  head -n 1 del.sh | sed 's/^echo //g' | sed 's/ .*//g' | grep -v "^$" > request.txt
+  echo "requestParams {" >> request.txt
+  echo "  key: \"debug\"" >> request.txt
+  echo "  value: \"6\"" >> request.txt
+  echo "}" >> request.txt
+  cat del.sh | sed 's/^[^|]*/cat request.txt | sed 's/> .*OLD_HOST.*/>1.txt/g' | sed 's/> .*NEW_HOST.*/>2.txt/g' > debug.sh
+else
+  head -n 1 del.sh | sed 's/^echo //g' | sed 's/ .*//g' | sed 's/rawRequest: "/rawRequest: "debug=6\&/g' > request.txt
+  cat del.sh | sed 's/^[^|]*/cat request.txt | sed 's/> .*OLD_HOST.*/>1.txt/g' | sed 's/> .*NEW_HOST.*/>2.txt/g' > debug.sh
+fi
+
+chmod +x debug.sh
+./debug.sh

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+vim -d ../result/NEW_HOST/$1.txt ../result/OLD_HOST/$1.txt
